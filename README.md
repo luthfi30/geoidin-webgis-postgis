@@ -1,59 +1,56 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+🌍 GEODIN GIS: Spatial Data Engine v2.0
+GEODIN GIS adalah platform manajemen data geospasial berbasis web yang menggunakan Laravel 11, Filament v3, dan PostGIS. Sistem ini dirancang untuk menangani ribuan fitur spasial dengan kontrol akses yang sangat granular di tingkat layer.
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+🛠️ Arsitektur Backend
+Aplikasi ini dibangun dengan fokus pada efisiensi pengolahan data spasial di sisi server:
 
-## About Laravel
+Database Spasial: Menggunakan PostgreSQL dengan ekstensi PostGIS untuk penyimpanan data geometri (geom) dan atribut fleksibel (jsonb).
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Filament Resources:
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+GisLayerResource: Mengelola metadata layer dan menyertakan fitur Action Import untuk memproses file GeoJSON menjadi fitur database secara otomatis.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+GisFeatureResource: Manajemen fitur individu dengan deteksi tipe geometri dinamis menggunakan query ST_GeometryType.
 
-## Learning Laravel
+Security (RBAC): Implementasi Filament Shield yang diintegrasikan dengan logika getEloquentQuery untuk memastikan pengguna hanya dapat melihat dan mengelola layer yang diizinkan (permittedUsers).
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+📦 Persyaratan Sistem
+PHP: ^8.2
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Framework: Laravel 12
 
-## Laravel Sponsors
+Database: PostgreSQL 15+ dengan PostGIS
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Dashboard: Filament v3
 
-### Premium Partners
+⚙️ Instalasi
+Clone & Composer Install
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+Bash
 
-## Contributing
+git clone https://github.com/username/geodin-gis.git
+composer install
+Environment Setup Pastikan driver database di .env menggunakan pgsql:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Code snippet
 
-## Code of Conduct
+DB_CONNECTION=pgsql
+DB_DATABASE=webgis_db
+Database Migration Pastikan ekstensi PostGIS sudah aktif di PostgreSQL Anda sebelum menjalankan migrasi:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Bash
 
-## Security Vulnerabilities
+php artisan migrate
+Shield Setup Generate permission untuk resource GIS:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Bash
 
-## License
+php artisan shield:install
+📈 Roadmap Pengembangan Backend
+[ ] Optimization: Implementasi Bulk Insert menggunakan insert() untuk mempercepat import GeoJSON ribuan baris.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+[ ] Asynchronous Processing: Memindahkan fungsi foreach import GeoJSON ke Laravel Jobs/Queues.
+
+[ ] Spatial Caching: Integrasi Redis untuk menyimpan hasil query GeoJSON agar performa map lebih cepat.
+
+GEODIN Team — Empowering Spatial Data Management.
