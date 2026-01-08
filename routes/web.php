@@ -5,12 +5,16 @@ use Illuminate\Support\Facades\Route;
 
 // 1. Halaman Peta sekarang menjadi Halaman Utama (Homepage)
 Route::view('/', 'map-view')->name('home');
-
+Route::get('/login', function () {
+    return view('auth.login');
+})->name('login');
 // 2. Route API (Kita tangani keamanan di dalam Controller, bukan di Middleware)
 Route::prefix('api')->group(function () {
     Route::get('/layers', [MapController::class, 'getLayers']);
     Route::get('/layers/{id}/features', [MapController::class, 'getFeatureData']);
 });
+
+
 
 // 3. Route Laravel yang membutuhkan login (Logout, dll)
 Route::middleware(['auth'])->group(function () {

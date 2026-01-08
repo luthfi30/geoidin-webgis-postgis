@@ -20,24 +20,28 @@ class GisFeatureResource extends Resource
 
     protected static ?string $navigationGroup = 'GIS Management';
 
-    protected static ?string $label = 'Fitur Geospasial';
+    protected static ?string $label = 'Gis Features';
 
     /**
      * Membatasi fitur berdasarkan layer yang diizinkan untuk User
      */
-    public static function getEloquentQuery(): Builder
-    {
-        $query = parent::getEloquentQuery();
+   public static function getEloquentQuery(): Builder
+{
+    // 1. Ambil query dasar dan tambahkan selectRaw untuk tipe geometri
+    $query = parent::getEloquentQuery()
+        ->select('gis_features.*') // Pastikan mengambil semua kolom asli
+        ->selectRaw('ST_GeometryType(geom) as computed_geom_type'); // Ambil tipe geom di sini
 
-        if (auth()->user()->hasRole('super_admin')) {
-            return $query;
-        }
-
-        // Ambil fitur dari layer yang diizinkan saja
-        return $query->whereHas('layer.permittedUsers', function ($q) {
-            $q->where('users.id', auth()->id());
-        });
+    // 2. Logika Permission: Super Admin melihat semua
+    if (auth()->user()->hasRole('super_admin')) {
+        return $query;
     }
+
+    // 3. Logika Permission: Filter berdasarkan layer yang diizinkan
+    return $query->whereHas('layer.permittedUsers', function ($q) {
+        $q->where('users.id', auth()->id());
+    });
+}
 
     /**
      * Menampilkan angka badge sesuai jumlah data yang diizinkan
@@ -80,25 +84,14 @@ class GisFeatureResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('display_name')
-                    ->label('Nama Fitur')
-                    ->getStateUsing(function (GisFeature $record) {
-                        $props = $record->properties ?? [];
-                        $keys = ['NAME', 'name', 'Name', 'nama', 'Nama', 'KETERANGAN', 'label'];
-                        foreach ($keys as $key) {
-                            if (! empty($props[$key])) return $props[$key];
-                        }
-                        return 'ID: '.$record->id;
-                    })
-                    ->searchable(query: function (Builder $query, string $search): Builder {
-                        return $query->where(function ($q) use ($search) {
-                            $q->where('properties->NAME', 'like', "%{$search}%")
-                                ->orWhere('properties->name', 'like', "%{$search}%")
-                                ->orWhere('properties->Name', 'like', "%{$search}%")
-                                ->orWhere('properties->nama', 'like', "%{$search}%");
-                        });
-                    })
-                    ->sortable(),
+               Tables\Columns\TextColumn::make('computed_display_name')
+                ->label('Nama Fitur')
+                // Kita arahkan ke accessor yang akan kita buat di Model
+                ->state(fn (GisFeature $record) => $record->computed_display_name) 
+                ->searchable(query: function (Builder $query, string $search): Builder {
+                    return $query->whereRaw("properties::text ILIKE ?", ["%{$search}%"]);
+                })
+                ->sortable(['id']), // Sortir berdasarkan ID sebagai fallback,
 
                 Tables\Columns\TextColumn::make('layer.name')
                     ->label('Layer')
@@ -107,14 +100,13 @@ class GisFeatureResource extends Resource
                     ->sortable()
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('geom_type')
-                    ->label('Tipe')
-                    ->badge()
-                    ->color('success')
-                    ->getStateUsing(function (GisFeature $record) {
-                        $result = DB::selectOne('SELECT ST_GeometryType(geom) as type FROM gis_features WHERE id = ?', [$record->id]);
-                        return $result ? str_replace('ST_', '', $result->type) : 'Unknown';
-                    }),
+                Tables\Columns\TextColumn::make('computed_geom_type') // 1. Gunakan alias dari selectRaw
+                ->label('Tipe')
+                ->badge()
+                ->color('success')
+                // 2. Gunakan formatStateUsing (lebih ringan) daripada getStateUsing
+                ->formatStateUsing(fn ($state) => str_replace('ST_', '', $state ?? 'Unknown'))
+                ->sortable(), // 3.
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('gis_layer_id')

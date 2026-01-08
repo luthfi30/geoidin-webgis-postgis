@@ -32,4 +32,13 @@ class GisFeature extends Model
         [$this->id]
     )->json ?? null;
 }
+public function getComputedDisplayNameAttribute(): string
+{
+    $props = $this->properties ?? [];
+    $keys = ['NAME', 'name', 'Name', 'nama', 'Nama', 'KETERANGAN', 'label'];
+    foreach ($keys as $key) {
+        if (! empty($props[$key])) return $props[$key];
+    }
+    return 'ID: ' . $this->id;
+}
 }

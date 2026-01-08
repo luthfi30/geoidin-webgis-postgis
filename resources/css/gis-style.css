@@ -1,0 +1,100 @@
+/* ==========================================================================
+   GEODIN GIS PROFESSIONAL STYLESHEET
+   ========================================================================== */
+
+[x-cloak] {
+    display: none !important;
+}
+
+#map {
+    height: 100vh;
+    width: 100%;
+    z-index: 1;
+    background-color: #f8fafc;
+}
+
+/* 1. CUSTOM SCROLLBAR */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+/* 2. LEAFLET POPUP CUSTOMIZATION */
+.leaflet-popup-content-wrapper {
+    border-radius: 12px;
+    padding: 5px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.popup-header {
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 13px; /* Ukuran Header */
+    color: #0f172a;
+    border-bottom: 2px solid #fbbf24; /* Aksen Kuning */
+    padding-bottom: 6px;
+    margin-bottom: 8px;
+}
+
+.popup-scroll-area {
+    max-height: 200px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+.popup-table td {
+    padding: 6px 8px;
+    font-size: 13px; /* Ukuran tulisan di popup */
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+}
+
+.popup-label {
+    font-weight: 700;
+    color: #64748b;
+    background: #f8fafc;
+    width: 40%;
+}
+
+/* 3. MAP INTERACTION (Highlighting) */
+.leaflet-interactive {
+    transition: stroke 0.3s ease, fill 0.3s ease, r 0.3s ease;
+    outline: none;
+}
+
+/* Pastikan toolbar Geoman muncul di atas elemen lain */
+.leaflet-pm-toolbar {
+    margin-top: 20px !important;
+    margin-right: 15px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Memperbaiki tampilan tooltip Geoman */
+.copy-helper,
+.pm-hint {
+    font-family: "Inter", sans-serif !important;
+    font-size: 11px !important;
+}
+
+/* Efek hover untuk tombol Home */
+.leaflet-control-custom button:hover {
+    background-color: #f4f4f4 !important;
+    color: #2563eb !important;
+}
+
+/* Mempercantik tampilan Layer Control */
+.leaflet-control-layers {
+    border-radius: 12px !important;
+    border: none !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+    padding: 8px !important;
+    font-family: "Inter", sans-serif !important;
+    font-weight: 600 !important;
+}

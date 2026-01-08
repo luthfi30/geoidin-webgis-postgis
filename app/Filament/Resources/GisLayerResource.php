@@ -87,38 +87,78 @@ class GisLayerResource extends Resource
                             ->disk('public')
                             ->directory('temp-gis')
                             ->maxSize(153600)
-                            ->acceptedFileTypes(['application/json', 'application/geo+json', 'text/plain']),
+                            ->acceptedFileTypes(['application/json', 'application/geojson', 'text/plain']),
                     ])
-                    ->action(function (array $data, GisLayer $record): void {
-                        $path = Storage::disk('public')->path($data['geojson_file']);
-                        $geoJson = json_decode(file_get_contents($path), true);
+                   ->action(function (array $data, GisLayer $record): void {
+                    $path = Storage::disk('public')->path($data['geojson_file']);
+                    
+                    // Validasi file ada dan terbaca
+                    if (!file_exists($path)) {
+                        Notification::make()->title('File tidak ditemukan')->danger()->send();
+                        return;
+                    }
 
-                        if (! isset($geoJson['features'])) {
-                            Notification::make()->title('Format GeoJSON tidak valid')->danger()->send();
-                            return;
-                        }
+                    $geoJson = json_decode(file_get_contents($path), true);
 
-                        try {
-                            DB::beginTransaction();
-                            $record->features()->delete();
+                    if (! isset($geoJson['features'])) {
+                        Notification::make()->title('Format GeoJSON tidak valid')->danger()->send();
+                        return;
+                    }
 
-                            foreach ($geoJson['features'] as $feature) {
-                                $geometryJson = json_encode($feature['geometry']);
-                                GisFeature::create([
-                                    'gis_layer_id' => $record->id,
-                                    'properties' => $feature['properties'] ?? [],
-                                    'geom' => DB::raw("ST_Force2D(ST_GeomFromGeoJSON('$geometryJson'))"),
-                                ]);
+                    try {
+                        DB::beginTransaction();
+
+                        // 1. Hapus fitur lama
+                        $record->features()->delete();
+
+                        // 2. Siapkan penampung data untuk Bulk Insert
+                        $featuresBatch = [];
+                        $now = now();
+
+                        foreach ($geoJson['features'] as $feature) {
+                            $geometryJson = json_encode($feature['geometry']);
+                            
+                            $featuresBatch[] = [
+                                'gis_layer_id' => $record->id,
+                                'properties'   => json_encode($feature['properties'] ?? []),
+                                // Gunakan DB::raw untuk fungsi PostGIS
+                                'geom'         => DB::raw("ST_Force2D(ST_GeomFromGeoJSON('$geometryJson'))"),
+                                // Eloquent ::insert tidak otomatis mengisi timestamp, jadi kita isi manual
+                                'created_at'   => $now,
+                                'updated_at'   => $now,
+                            ];
+
+                            // 3. Masukkan dalam potongan (chunk) per 500 data agar tidak overload
+                            if (count($featuresBatch) >= 500) {
+                                GisFeature::insert($featuresBatch);
+                                $featuresBatch = []; // Kosongkan batch setelah insert
                             }
-
-                            DB::commit();
-                            Notification::make()->title('Berhasil memperbarui data layer '.$record->name)->success()->send();
-                        } catch (\Exception $e) {
-                            DB::rollBack();
-                            Notification::make()->title('Gagal Import')->body($e->getMessage())->danger()->persistent()->send();
                         }
+
+                        // Insert sisa data yang belum mencapai 500
+                        if (!empty($featuresBatch)) {
+                            GisFeature::insert($featuresBatch);
+                        }
+
+                        DB::commit();
+                        Notification::make()->title('Berhasil mengimport ' . count($geoJson['features']) . ' fitur ke layer ' . $record->name)->success()->send();
+
+                    } catch (\Exception $e) {
+                        DB::rollBack();
+                        // Log error untuk debug internal
+                        \Log::error("GeoJSON Import Error: " . $e->getMessage());
+                        
+                        Notification::make()
+                            ->title('Gagal Import')
+                            ->body('Terjadi kesalahan pada data atau format geometri: ' . substr($e->getMessage(), 0, 100))
+                            ->danger()
+                            ->persistent()
+                            ->send();
+                    } finally {
+                        // Pastikan file dihapus baik sukses maupun gagal
                         Storage::disk('public')->delete($data['geojson_file']);
-                    }),
+                    }
+                }),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ]);
