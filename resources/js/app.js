@@ -13,6 +13,11 @@ window.Alpine = Alpine;
 window.gisApp = function () {
     return {
         activeTab: "layers",
+        sidebarOpen: true,
+        tableHeight: 300, // Tinggi default dalam pixel
+        isResizing: false,
+        showImageModal: false, // Tambahkan ini
+        previewImage: "", // Tambahkan ini
         search: "",
         map: null,
         layers: [],

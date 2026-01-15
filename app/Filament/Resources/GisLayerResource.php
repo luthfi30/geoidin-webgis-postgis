@@ -87,7 +87,7 @@ class GisLayerResource extends Resource
                             ->disk('public')
                             ->directory('temp-gis')
                             ->maxSize(153600)
-                            ->acceptedFileTypes(['application/json', 'application/geojson', 'text/plain']),
+                            ->acceptedFileTypes(['application/json', 'application/geo+json', 'text/plain']),
                     ])
                    ->action(function (array $data, GisLayer $record): void {
                     $path = Storage::disk('public')->path($data['geojson_file']);

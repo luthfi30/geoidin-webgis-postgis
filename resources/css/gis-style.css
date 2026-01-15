@@ -98,3 +98,16 @@
     font-family: "Inter", sans-serif !important;
     font-weight: 600 !important;
 }
+
+.leaflet-control-easyPrint {
+    z-index: 1000 !important;
+    background: white;
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+.leaflet-control-easyPrint-button {
+    width: 30px !important;
+    height: 30px !important;
+    cursor: pointer;
+    display: block !important;
+}

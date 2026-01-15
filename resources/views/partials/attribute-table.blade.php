@@ -1,5 +1,30 @@
 <div id="attribute-panel" x-show="showTable"
-    class="fixed bottom-0 right-0 left-[350px] bg-white z-[1002] border-t flex flex-col h-[38vh] shadow-2xl" x-cloak>
+    class="fixed bottom-0 right-0 bg-white z-[1002] border-t flex flex-col shadow-2xl transition-[left] duration-300"
+    :class="sidebarOpen ? 'left-[350px]' : 'left-0'" :style="'height: ' + tableHeight + 'px'" x-cloak>
+    <div class="absolute top-0 left-0 right-0 h-1.5 cursor-ns-resize hover:bg-blue-500/40 z-[1004] transition-colors"
+        @mousedown="
+            isResizing = true;
+            const startY = $event.clientY;
+            const startHeight = tableHeight;
+
+            const onMouseMove = (e) => {
+                if (!isResizing) return;
+                // Hitung selisih gerakan mouse (ke atas menambah tinggi)
+                const delta = startY - e.clientY;
+                // Batasi tinggi minimal 150px dan maksimal 85% tinggi layar
+                tableHeight = Math.max(150, Math.min(window.innerHeight * 0.85, startHeight + delta));
+            };
+
+            const onMouseUp = () => {
+                isResizing = false;
+                window.removeEventListener('mousemove', onMouseMove);
+                window.removeEventListener('mouseup', onMouseUp);
+            };
+
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('mouseup', onMouseUp);
+        ">
+    </div>
 
     <div class="bg-[#0f172a] px-4 py-2.5 flex justify-between items-center shrink-0">
         <div class="flex items-center gap-4">
@@ -14,10 +39,30 @@
             </div>
 
             <div class="relative" @click.away="openOptions = false">
-                <button @click="openOptions = !openOptions"
-                    class="bg-slate-800 text-slate-200 px-3 py-1.5 rounded-lg text-[11px] font-bold hover:bg-slate-700 transition-colors">
-                    Opsi Kolom <i class="fa-solid fa-chevron-down ml-1 text-[9px]"></i>
-                </button>
+                <div class="flex items-center bg-slate-900 rounded-xl">
+
+                    <button @click="openOptions = !openOptions"
+                        class="bg-slate-800 text-slate-200 px-3 py-1.5 rounded-lg text-[11px] font-bold hover:bg-slate-700 transition-colors flex items-center h-fit">
+                        Opsi Kolom <i class="fa-solid fa-chevron-down ml-1 text-[9px]"></i>
+                    </button>
+
+                    <div class="flex items-center gap-1 ml-2 border-l border-slate-700 pl-3">
+                        <button @click="exportGeoJSON()"
+                            class="px-3 py-1 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded text-xs font-bold transition-all">
+                            <i class="fa-solid fa-earth-americas mr-1"></i> GEOJSON
+                        </button>
+                        <button @click="exportCSV()"
+                            class="bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-file-csv"></i> CSV
+                        </button>
+
+                        <button @click="exportExcel()"
+                            class="bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-file-excel"></i> Excel
+                        </button>
+                    </div>
+
+                </div>
                 <div x-show="openOptions"
                     class="absolute bottom-full mb-2 left-0 w-64 bg-white border shadow-2xl rounded-xl z-[1003] overflow-hidden">
                     <div class="p-2 bg-slate-50 border-b flex justify-between items-center">
