@@ -121,6 +121,8 @@ export const tableLogic = {
         let rows = "";
         let imageHtml = "";
         let index = 0;
+        const layerDisplayName =
+            layer.name || this.activeTableName || "Layer Aktif";
 
         for (let k in props) {
             if (k.startsWith("_")) continue;
@@ -207,7 +209,7 @@ export const tableLogic = {
         <div class="custom-popup-container" style="min-width: 320px; font-family: sans-serif;">
             <div style="background: #0f172a; color: white; padding: 14px 16px; border-radius: 8px 8px 0 0; display: flex; align-items: center; gap: 8px;">
                 <i class="fa-solid fa-circle-info text-blue-400"></i>
-                <span style="font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Detail Fitur</span>
+                <span style="font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">${layerDisplayName}</span>
             </div>
             ${imageHtml}
             <div style="max-height: 250px; overflow-y: auto; background: white;">
