@@ -2,6 +2,7 @@ export const tableLogic = {
     // --- State / Variables ---
     activeTableName: "",
     activeLayerId: null,
+    activeRowId: null,
     showTable: false,
     tableSearch: "",
     tablePage: 1,
@@ -21,6 +22,7 @@ export const tableLogic = {
         this.tablePage = 1;
         this.tableData = [];
         this.tableColumns = [];
+        this.activeRowId = null;
 
         fetch(`/api/layers/${layer.id}/features`)
             .then((res) => res.json())
@@ -48,8 +50,8 @@ export const tableLogic = {
             Object.entries(row).some(
                 ([key, val]) =>
                     !key.startsWith("_") &&
-                    String(val).toLowerCase().includes(s)
-            )
+                    String(val).toLowerCase().includes(s),
+            ),
         );
     },
 
@@ -62,6 +64,7 @@ export const tableLogic = {
     },
 
     selectFeature(row) {
+        this.activeRowId = row._rowId;
         let target = null;
         const cleanRow = {};
         Object.keys(row).forEach((key) => {
@@ -251,7 +254,7 @@ export const tableLogic = {
         data.forEach((row) => {
             const values = visibleCols.map(
                 (colName) =>
-                    `"${String(row[colName] ?? "").replace(/"/g, '""')}"`
+                    `"${String(row[colName] ?? "").replace(/"/g, '""')}"`,
             );
             csvRows.push(values.join(","));
         });
@@ -315,12 +318,12 @@ export const tableLogic = {
             const isMatch = data.some((row) => {
                 // Bandingkan properti tanpa menyertakan variabel internal _rowId dsb
                 const rowClean = Object.fromEntries(
-                    Object.entries(row).filter(([k]) => !k.startsWith("_"))
+                    Object.entries(row).filter(([k]) => !k.startsWith("_")),
                 );
                 const layerClean = Object.fromEntries(
                     Object.entries(layerProps).filter(
-                        ([k]) => !k.startsWith("_")
-                    )
+                        ([k]) => !k.startsWith("_"),
+                    ),
                 );
                 return JSON.stringify(rowClean) === JSON.stringify(layerClean);
             });
@@ -332,8 +335,8 @@ export const tableLogic = {
                 // Bersihkan properti dari metadata internal sistem sebelum diunduh
                 geojson.properties = Object.fromEntries(
                     Object.entries(layerProps).filter(
-                        ([k]) => !k.startsWith("_")
-                    )
+                        ([k]) => !k.startsWith("_"),
+                    ),
                 );
 
                 features.push(geojson);
@@ -342,7 +345,7 @@ export const tableLogic = {
 
         if (features.length === 0) {
             return alert(
-                "Gagal mencocokkan data tabel dengan geometri di peta."
+                "Gagal mencocokkan data tabel dengan geometri di peta.",
             );
         }
 
@@ -360,7 +363,7 @@ export const tableLogic = {
             link.href = url;
             link.download = `${this.activeTableName.replace(
                 /\s+/g,
-                "_"
+                "_",
             )}_export.geojson`;
             document.body.appendChild(link);
             link.click();

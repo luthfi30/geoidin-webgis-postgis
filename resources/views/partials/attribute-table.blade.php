@@ -132,11 +132,11 @@
                 <template x-for="(row, idx) in getPaginatedData()" :key="row._rowId">
                     <tr @click="selectFeature(row)"
                         class="hover:bg-blue-50/50 cursor-pointer transition-colors border-l-4 border-transparent"
-                        :class="selectedFeatureLayer && selectedFeatureLayer.feature.properties._originalProps === row
-                            ._originalProps ?
-                            'bg-yellow-50 border-yellow-500' : ''">
+                        :class="activeRowId === row._rowId ? 'bg-slate-200 border-slate-500 font-bold' : ''">
+
                         <td class="p-3 text-[12px] text-slate-400 font-mono text-center"
                             x-text="((tablePage - 1) * tablePageSize) + (idx + 1)"></td>
+
                         <template x-for="col in tableColumns" :key="'td-' + row._rowId + '-' + col.name">
                             <td x-show="col.visible"
                                 class="p-3 text-[13px] text-slate-600 font-medium whitespace-nowrap"
