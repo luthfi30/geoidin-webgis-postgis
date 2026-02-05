@@ -59,7 +59,7 @@ class GisFeatureResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\Section::make('Visualisasi Lokasi')
+            Forms\Components\Section::make('Map Preview')
                 ->description('Posisi fitur pada peta')
                 ->schema([
                     Forms\Components\View::make('filament.components.map-preview')

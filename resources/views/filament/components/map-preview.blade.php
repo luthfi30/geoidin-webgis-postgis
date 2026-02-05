@@ -6,7 +6,7 @@
             if (this.map) return;
 
             // 1. Inisialisasi Peta (Default ke koordinat Indonesia jika data kosong)
-            this.map = L.map($refs.map).setView([-2.5, 118], 5);
+            this.map = L.map($refs.map).setView([-2.5, 118], 10);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; OpenStreetMap'
@@ -21,7 +21,7 @@
                     const layer = L.geoJSON(geojsonData).addTo(this.map);
 
                     // Zoom otomatis ke wilayah (Nias, dll)
-                    this.map.fitBounds(layer.getBounds(), { padding: [30, 30] });
+                    this.map.fitBounds(layer.getBounds(), { padding: [30, 30], maxZoom: 7 });
                 } catch (e) {
                     console.error('Peta Error (Parsing):', e);
                 }
